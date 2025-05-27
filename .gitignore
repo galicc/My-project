@@ -2,7 +2,11 @@
 out/
 !**/src/main/**/out/
 !**/src/test/**/out/
-.idea/
+**.idea/
+**/*.iml
+**/*.ipr
+**/*.iws
+
 
 ### Eclipse ###
 .apt_generated
@@ -28,3 +32,5 @@ bin/
 
 ### Mac OS ###
 .DS_Store
+/My project.iml
+/My-project.iml
