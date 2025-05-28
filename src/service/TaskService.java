@@ -1,6 +1,9 @@
 package service;
 
 import enumeration.Status;
+import exceptions.task.TaskAlreadyExistException;
+import exceptions.task.TaskNotExistException;
+import exceptions.task.TaskNotFoundByIdException;
 import model.Task;
 
 import java.util.*;
@@ -8,24 +11,32 @@ import java.util.*;
 public class TaskService {
     HashSet<Task> tasks = new HashSet<>();
 
-    public Task create(String title, String description, Date deadline) {
+    public Task create(String title, String description, Date deadline) throws TaskAlreadyExistException {
         if (title == null || title.isEmpty()) return null;
 
         Task newTask = new Task(title, description, deadline);
 
-        tasks.add(newTask);
+        try {
+            Task test = getById(newTask.getUuid());
+        }
+        catch (TaskNotFoundByIdException tae) {
+            tasks.add(newTask);
+            return newTask;
+        }
 
-        return newTask;
+        throw new TaskAlreadyExistException(newTask.toString());
     }
 
-    public Task getById(UUID id) {
+    public Task getById(UUID id) throws TaskNotFoundByIdException {
         if (id == null) return null;
 
         for (Task task : tasks) {
-            if (task.getUuid().equals(id)) return task;
+            if (task.getUuid().equals(id)) {
+                return task;
+            }
         }
 
-        return null;
+        throw new TaskNotFoundByIdException(id.toString());
     }
 
     public HashSet<Task> getAll() {
@@ -68,7 +79,7 @@ public class TaskService {
         return new LinkedHashSet<>(result);
     }
 
-    public Task update(Task updatedTask) {
+    public Task update(Task updatedTask) throws TaskNotExistException {
         if (updatedTask == null || updatedTask.getUuid() == null) return null;
 
         for (Task task : tasks) {
@@ -83,7 +94,7 @@ public class TaskService {
             }
         }
 
-        return null;
+        throw new TaskNotExistException(updatedTask.toString());
     }
 
     private <T> T getUpdate(T oldValue, T newValue) {
@@ -99,13 +110,18 @@ public class TaskService {
         else return oldValue;
     }
 
-    public Task delete(UUID id){
+    public Task delete(UUID id) throws TaskNotExistException {
         if (id == null) return null;
 
-        Task task = getById(id);
-        if (task == null) return null;
+        Task task = null;
+        try{
+            task = getById(id);
+            if (task == null) return null;
 
-        tasks.remove(task);
+            tasks.remove(task);
+        } catch (TaskNotFoundByIdException tnfe) {
+            throw new TaskNotExistException(id.toString());
+        }
 
         return task;
     }
